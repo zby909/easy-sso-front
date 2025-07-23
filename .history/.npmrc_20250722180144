@@ -1,4 +1,0 @@
-registry=https://registry.npmmirror.com/
-home = https://npmmirror.com
-xml=text
-ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
