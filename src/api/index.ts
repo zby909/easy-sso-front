@@ -9,7 +9,7 @@ import { CreateAxios } from './create-axios';
 import type { AxiosTransform, CustomConfig } from './create-axios';
 import { ElMessage, ElLoading } from 'element-plus';
 
-const baseServiceUrl = import.meta.env.VITE_BASE_API;
+const baseServiceUrl = import.meta.env.VITE_SERVICE_BASE_URL;
 let loadingStatus; //loading实例
 let loadingApiLength = 0; //记录需要loading提示的接口 (为了保证需要loading时间最长的那个接口完成后再close)
 let showLoadingTimer;
@@ -67,15 +67,7 @@ const transformFn: AxiosTransform = {
   },
 };
 
-export interface Result<T = any> {
-  code: number;
-  type: 'success' | 'error' | 'warning';
-  message: string;
-  result: T;
-}
-
-// 创建axios实例一
-export const defHttp = new CreateAxios<Result>({
+export const defHttp = new CreateAxios<Api.Request.Result>({
   baseURL: baseServiceUrl,
   timeout: 2 * 60 * 1000, // 2分钟超时
   _transformFn: transformFn,

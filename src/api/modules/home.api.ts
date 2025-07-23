@@ -7,26 +7,22 @@
  * @Reference:
  */
 import { defHttp } from '@/api/index';
-import type { Result } from '@/api/index';
 
-export default {
-  /**
-   * @description: ping
-   */
-  ping(params?, config?, options?) {
-    return defHttp.request<Result<{ abc: string }>>(
-      {
-        url: '/ping',
-        method: 'GET',
-        params,
-        ...config,
-      },
-      {
-        afHLoading: true,
-        joinTime: true,
-        ...options,
-      },
-    );
-  },
-  //xxx添加其他方法
-};
+/**
+ * @description: ping
+ */
+export function ping(params?, config?, options?) {
+  return defHttp.request<Api.Request.Result<{ abc: string }>>(
+    {
+      url: '/ping',
+      method: 'GET',
+      params,
+      ...config,
+    },
+    {
+      afHLoading: true,
+      joinTime: true,
+      ...options,
+    },
+  );
+}
