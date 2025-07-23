@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Empty: typeof import('./../components/common/Empty/index.vue')['default']
+    GLBgIcon: typeof import('./../components/common/GLBgIcon.vue')['default']
     GLIcon: typeof import('./../components/common/GLIcon.vue')['default']
     HelloWorld: typeof import('./../components/HelloWorld.vue')['default']
     IconCommunity: typeof import('./../components/icons/IconCommunity.vue')['default']
@@ -16,6 +17,8 @@ declare module 'vue' {
     IconEcosystem: typeof import('./../components/icons/IconEcosystem.vue')['default']
     IconSupport: typeof import('./../components/icons/IconSupport.vue')['default']
     IconTooling: typeof import('./../components/icons/IconTooling.vue')['default']
+    ResizeBox2: typeof import('./../components/common/resizeBox2.vue')['default']
+    ResizeVBox: typeof import('./../components/common/resizeVBox.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TheWelcome: typeof import('./../components/TheWelcome.vue')['default']

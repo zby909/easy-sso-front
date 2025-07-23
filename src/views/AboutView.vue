@@ -2,6 +2,7 @@
   <div class="about text-3xl font-bold underline text-black-500">
     <h1>This is an about page</h1>
     <IconifyIcon icon="mdi:home" />
+    <GLIcon icon="icon-baocun" />
   </div>
 </template>
 
