@@ -1,0 +1,10 @@
+node_modules
+resources/tfl_server
+.history
+out
+dist
+src/renderer/src/styles/font
+pnpm-lock.yaml
+LICENSE.md
+tsconfig.json
+tsconfig.*.json

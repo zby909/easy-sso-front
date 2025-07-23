@@ -18,9 +18,11 @@ export default defineConfig({
     AutoImport({
       imports: ['vue', 'vue-router'],
       resolvers: [ElementPlusResolver()],
+      dts: 'src/typings/auto-imports.d.ts',
     }),
     Components({
       resolvers: [ElementPlusResolver()],
+      dts: 'src/typings/components.d.ts',
     }),
     tailwindcss(),
   ],

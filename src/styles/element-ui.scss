@@ -1,0 +1,17 @@
+/* element-ui  全局覆盖样式 类名慎重*/
+/* element-ui  全局覆盖样式 类名慎重*/
+.el-loading-mask {
+  .el-icon-loading {
+    font-size: 30px;
+  }
+  .el-loading-text {
+    margin-top: 15px;
+    font-size: 15px;
+  }
+}
+.el-message-box__message {
+  word-break: break-word;
+}
+.el-button [class*='gl-icon'] + span {
+  margin-left: 4px;
+}
