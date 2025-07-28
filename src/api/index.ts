@@ -9,7 +9,8 @@ import { CreateAxios } from './create-axios';
 import type { AxiosTransform, CustomConfig } from './create-axios';
 import { ElMessage, ElLoading } from 'element-plus';
 
-const baseServiceUrl = import.meta.env.VITE_SERVICE_BASE_URL;
+const isDev = import.meta.env.DEV; // 是否开发环境
+const baseServiceUrl = isDev ? '/proxy' : import.meta.env.VITE_SERVICE_BASE_URL;
 let loadingStatus; //loading实例
 let loadingApiLength = 0; //记录需要loading提示的接口 (为了保证需要loading时间最长的那个接口完成后再close)
 let showLoadingTimer;

@@ -3,7 +3,28 @@
 html,
 body {
   box-sizing: border-box;
-  min-width: 1280px;
+}
+
+/* 全局按钮样式 (可选，用于非Element组件) */
+.button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #4a90e2; // 主题色
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+  }
 }
 
 //全局滚动条 非必要修改全局时 请在业务代码中自定义

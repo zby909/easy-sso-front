@@ -31,4 +31,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    proxy: {
+      '/proxy': {
+        target: 'http://localhost:3000', // 要代理的域名
+        changeOrigin: true, //允许跨域
+        rewrite: path => path.replace(/^\/proxy/, ''),
+      },
+    },
+  },
 });
