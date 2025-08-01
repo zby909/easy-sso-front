@@ -3,7 +3,7 @@
  * 用于增强OAuth 2.0授权码流程的安全性
  */
 import CryptoJS from 'crypto-js';
-import type { PKCEParams } from '@/types/api';
+import type { PKCEParams } from '@/types/api-modules/api';
 
 /**
  * 生成随机字符串

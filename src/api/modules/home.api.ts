@@ -19,7 +19,7 @@ import type {
   AuthorizeResponse,
   UserInfoRequest,
   UserInfoResponse,
-} from '@/types/api';
+} from '@/types/api-modules/api';
 
 // ==================== 认证相关接口 ====================
 

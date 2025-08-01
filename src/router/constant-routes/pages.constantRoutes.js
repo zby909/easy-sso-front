@@ -27,8 +27,8 @@ export default [
     name: 'profile',
     component: () => import('@/views/ProfileView.vue'),
     meta: {
-        title: '个人中心',
-        requiresAuth: true,
+      title: '个人中心',
+      requiresAuth: true,
     },
   },
 ];

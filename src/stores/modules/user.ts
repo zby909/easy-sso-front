@@ -3,7 +3,7 @@
  */
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { UserInfo } from '@/types/api';
+import type { UserInfo } from '@/types/api-modules/api';
 import { useAuthStore } from './auth';
 
 export const useUserStore = defineStore(
