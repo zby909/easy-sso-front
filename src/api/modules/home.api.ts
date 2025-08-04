@@ -7,27 +7,14 @@
  * @Reference: SSO后端认证中心API
  */
 import { defHttp } from '@/api';
-import type {
-  ApiResponse,
-  SendVerificationRequest,
-  SendVerificationResponse,
-  RegisterRequest,
-  RegisterResponse,
-  LoginRequest,
-  LoginResponse,
-  AuthorizeRequest,
-  AuthorizeResponse,
-  UserInfoRequest,
-  UserInfoResponse,
-} from '@/types/api-modules/api';
 
 // ==================== 认证相关接口 ====================
 
 /**
  * 发送邮箱验证码
  */
-export function sendVerificationCode(data: SendVerificationRequest, config?, options?) {
-  return defHttp.request<ApiResponse<SendVerificationResponse>>(
+export function sendVerificationCode(data: Api.Request.SendVerification, config?, options?) {
+  return defHttp.request<Api.Response.Base<Api.Response.SendVerification>>(
     {
       url: '/api/auth/verification/send',
       method: 'POST',
@@ -46,8 +33,8 @@ export function sendVerificationCode(data: SendVerificationRequest, config?, opt
 /**
  * 用户注册（无密码）
  */
-export function register(data: RegisterRequest, config?, options?) {
-  return defHttp.request<ApiResponse<RegisterResponse>>(
+export function register(data: Api.Request.Register, config?, options?) {
+  return defHttp.request<Api.Response.Base<Api.Response.Register>>(
     {
       url: '/api/auth/register',
       method: 'POST',
@@ -66,8 +53,8 @@ export function register(data: RegisterRequest, config?, options?) {
 /**
  * 用户登录（无密码）
  */
-export function login(data: LoginRequest, config?, options?) {
-  return defHttp.request<ApiResponse<LoginResponse>>(
+export function login(data: Api.Request.Login, config?, options?) {
+  return defHttp.request<Api.Response.Base<Api.Response.Login>>(
     {
       url: '/api/auth/login',
       method: 'POST',
@@ -87,7 +74,7 @@ export function login(data: LoginRequest, config?, options?) {
  * 注销登录中心会话
  */
 export function logoutCenter(config?, options?) {
-  return defHttp.request<ApiResponse<{ message: string }>>(
+  return defHttp.request<Api.Response.Base<{ message: string }>>(
     {
       url: '/api/auth/logout/center',
       method: 'POST',
@@ -107,8 +94,8 @@ export function logoutCenter(config?, options?) {
 /**
  * OAuth 授权 - 获取授权码
  */
-export function authorize(params: AuthorizeRequest, config?, options?) {
-  return defHttp.request<ApiResponse<AuthorizeResponse>>(
+export function authorize(params: Api.Request.Authorize, config?, options?) {
+  return defHttp.request<Api.Response.Base<Api.Response.Authorize>>(
     {
       url: '/api/auth/authorize',
       method: 'GET',
@@ -127,8 +114,8 @@ export function authorize(params: AuthorizeRequest, config?, options?) {
 /**
  * 获取用户信息
  */
-export function getUserInfo(params: UserInfoRequest, config?, options?) {
-  return defHttp.request<ApiResponse<UserInfoResponse>>(
+export function getUserInfo(params: Api.Request.UserInfo, config?, options?) {
+  return defHttp.request<Api.Response.Base<Api.Response.UserInfo>>(
     {
       url: '/api/auth/userinfo',
       method: 'GET',

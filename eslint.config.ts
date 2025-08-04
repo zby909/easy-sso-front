@@ -10,7 +10,6 @@ import tailwind from 'eslint-plugin-tailwindcss';
 // More info at https://github.com/vuejs/eslint-config-typescript/#advanced-setup
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
-console.log(`${dirname(fileURLToPath(import.meta.url))}/src/styles/global.css`);
 
 export default defineConfigWithVueTs(
   {

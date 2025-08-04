@@ -3,25 +3,23 @@
  */
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { UserInfo } from '@/types/api-modules/api';
 import { useAuthStore } from './auth';
 
 export const useUserStore = defineStore(
   'user',
   () => {
     // 状态
-    const userInfo = ref<UserInfo | null>(null);
+    const userInfo = ref<Api.Response.UserInfo | null>(null);
     const isLoggedIn = ref(false);
 
     // 计算属性
     const userName = computed(() => userInfo.value?.name || userInfo.value?.email || '');
     const userEmail = computed(() => userInfo.value?.email || '');
-    const isEmailVerified = computed(() => userInfo.value?.emailVerified || false);
 
     /**
      * 设置用户信息
      */
-    function setUserInfo(user: UserInfo) {
+    function setUserInfo(user: Api.Response.UserInfo) {
       userInfo.value = user;
       isLoggedIn.value = true;
     }
@@ -50,7 +48,7 @@ export const useUserStore = defineStore(
     /**
      * 更新用户信息的某个字段
      */
-    function updateUserInfo(updates: Partial<UserInfo>) {
+    function updateUserInfo(updates: Partial<Api.Response.UserInfo>) {
       if (userInfo.value) {
         userInfo.value = { ...userInfo.value, ...updates };
       }
@@ -64,7 +62,6 @@ export const useUserStore = defineStore(
       // 计算属性
       userName,
       userEmail,
-      isEmailVerified,
 
       // 方法
       setUserInfo,

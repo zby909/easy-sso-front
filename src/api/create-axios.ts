@@ -11,8 +11,6 @@ import qs from 'qs';
 
 import type { AxiosRequestConfig, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
-console.log(window, import.meta.env);
-
 const isFunction = val => typeof val === 'function';
 
 export type CustomConfig = {

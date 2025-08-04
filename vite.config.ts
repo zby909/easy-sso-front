@@ -31,6 +31,19 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // 将第三方库单独打包
+          'element-plus': ['element-plus', '@element-plus/icons-vue'],
+          crypto: ['crypto-js'],
+          utils: ['axios', 'dayjs', 'qs'],
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/proxy': {

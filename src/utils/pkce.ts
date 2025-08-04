@@ -3,7 +3,6 @@
  * 用于增强OAuth 2.0授权码流程的安全性
  */
 import CryptoJS from 'crypto-js';
-import type { PKCEParams } from '@/types/api-modules/api';
 
 /**
  * 生成随机字符串
@@ -48,7 +47,7 @@ function sha256(input: string): string {
  * 生成PKCE参数
  * @returns PKCE参数对象
  */
-export function generatePKCEParams(): PKCEParams {
+export function generatePKCEParams(): Api.Common.PKCEParams {
   // 生成code_verifier (43-128字符的随机字符串)
   const codeVerifier = generateRandomString(32); // 32字节 = 43字符的base64url
 
@@ -80,7 +79,7 @@ export function validateState(receivedState: string, originalState: string): boo
  * 存储PKCE参数到sessionStorage
  * @param params PKCE参数
  */
-export function storePKCEParams(params: PKCEParams): void {
+export function storePKCEParams(params: Api.Common.PKCEParams): void {
   sessionStorage.setItem('pkce_params', JSON.stringify(params));
 }
 
@@ -88,7 +87,7 @@ export function storePKCEParams(params: PKCEParams): void {
  * 从sessionStorage获取PKCE参数
  * @returns PKCE参数或null
  */
-export function getPKCEParams(): PKCEParams | null {
+export function getPKCEParams(): Api.Common.PKCEParams | null {
   const stored = sessionStorage.getItem('pkce_params');
   if (!stored) return null;
 
@@ -113,7 +112,7 @@ export function clearPKCEParams(): void {
  * @param pkceParams PKCE参数
  * @returns 完整的授权URL
  */
-export function buildAuthorizationUrl(baseUrl: string, redirectUri: string, pkceParams: PKCEParams): string {
+export function buildAuthorizationUrl(baseUrl: string, redirectUri: string, pkceParams: Api.Common.PKCEParams): string {
   const params = new URLSearchParams({
     redirect_uri: redirectUri,
     state: pkceParams.state,

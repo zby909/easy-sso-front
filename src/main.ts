@@ -1,5 +1,3 @@
-import 'normalize.css';
-import '@/styles/index.scss';
 import '@/styles/main.css';
 import '@/styles/font/iconfont.css';
 import '@/styles/font/iconfont.js';

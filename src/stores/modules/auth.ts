@@ -5,7 +5,9 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import * as authApi from '@/api/modules/home.api';
 import { useUserStore } from './user';
-import { config } from '@/config';
+
+// 验证码冷却时间（秒）
+const VERIFICATION_COOLDOWN = 60;
 
 export const useAuthStore = defineStore('auth', () => {
   const userStore = useUserStore();
@@ -50,7 +52,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (response.code === 200) {
         ElMessage.success(response.msg || '验证码发送成功');
         // 开始冷却计时
-        const cooldown = response.data?.cooldownSeconds || config.verification.resendCooldown;
+        const cooldown = response.data?.cooldownSeconds || VERIFICATION_COOLDOWN;
         startCooldown(cooldown);
         return true;
       } else {
@@ -62,7 +64,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       // 处理频率限制错误
       if (error.response?.status === 429) {
-        ElMessage.error(config.rateLimit.emailMessage);
+        ElMessage.error('验证码发送过于频繁，请稍后再试');
       } else {
         ElMessage.error(error.message || '验证码发送失败');
       }
@@ -81,7 +83,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       const response = await authApi.register({ email, verificationCode: code, name });
 
-      if (response.code === 201) {
+      if (response.code === 200) {
         ElMessage.success(response.msg || '注册成功');
         // 注册成功后，用户需要重新登录
         return true;

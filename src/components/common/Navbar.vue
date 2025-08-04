@@ -1,20 +1,31 @@
-'''<!-- 导航栏组件 -->
+<!-- 导航栏组件 -->
 <template>
-  <header class="sso-navbar">
-    <div class="navbar-content">
-      <div class="navbar-brand" @click="goHome">
-        <Icon icon="mdi:shield-lock-outline" class="brand-icon" />
-        <span class="brand-text">SSO-Auth</span>
+  <header class="sticky top-0 z-[1000] flex h-16 w-full items-center justify-center bg-white px-4 shadow-md md:px-8">
+    <div class="flex w-full max-w-6xl items-center justify-between">
+      <!-- Logo区域 -->
+      <div class="flex cursor-pointer items-center gap-2 sm:gap-3" @click="goHome">
+        <Icon icon="mdi:shield-lock-outline" class="text-2xl text-blue-500 sm:text-3xl" />
+        <span class="text-lg font-semibold text-gray-800 sm:text-xl">
+          <span class="hidden sm:inline">SSO-Auth</span>
+          <span class="sm:hidden">SSO</span>
+        </span>
       </div>
 
-      <div class="navbar-menu">
+      <!-- 导航菜单区域 -->
+      <div class="navbar-menu flex items-center">
         <!-- 用户信息下拉菜单 -->
         <el-dropdown v-if="userStore.isLoggedIn" class="user-dropdown" trigger="click">
-          <div class="user-trigger">
-            <el-avatar :size="32" :src="userStore.userInfo?.avatar" class="user-avatar">
+          <div
+            class="flex min-w-[44px] cursor-pointer items-center justify-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-gray-50 sm:justify-start sm:gap-3 sm:px-3"
+          >
+            <!-- 用户头像 -->
+            <el-avatar :size="28" class="shrink-0 sm:!h-8 sm:!w-8">
               {{ userStore.userName?.charAt(0).toUpperCase() }}
             </el-avatar>
-            <span class="user-name">{{ userStore.userName }}</span>
+            <!-- 用户名（在中等屏幕及以上显示） -->
+            <span class="hidden font-medium text-gray-600 md:inline">{{ userStore.userName }}</span>
+            <!-- 下拉箭头 -->
+            <Icon icon="mdi:chevron-down" class="text-sm text-gray-400" />
           </div>
           <template #dropdown>
             <el-dropdown-menu>
@@ -29,6 +40,13 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
+
+        <!-- 登录按钮（未登录时显示） -->
+        <div v-else class="flex items-center gap-2">
+          <el-button type="primary" size="default" @click="goToLogin" class="!px-3 !py-1.5 !text-sm sm:!px-4 sm:!py-2 sm:!text-base">
+            登录
+          </el-button>
+        </div>
       </div>
     </div>
   </header>
@@ -46,6 +64,7 @@ const authStore = useAuthStore();
 
 const goHome = () => router.push('/');
 const goToProfile = () => router.push('/profile');
+const goToLogin = () => router.push('/login');
 
 const handleLogout = async () => {
   await authStore.logout();
@@ -53,86 +72,18 @@ const handleLogout = async () => {
 };
 </script>
 
-<style scoped lang="scss">
-.sso-navbar {
-  width: 100%;
-  background-color: #ffffff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  padding: 0 1rem; // Default padding for mobile
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-
-  @media (min-width: 768px) {
-    padding: 0 2rem; // Padding for larger screens
-  }
-}
-
-.navbar-content {
-  width: 100%;
-  max-width: 1200px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-
-  .brand-icon {
-    font-size: 1.75rem;
-    color: #4a90e2;
-  }
-
-  .brand-text {
-    display: none; // Hide text on mobile
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #343a40;
-
-    @media (min-width: 768px) {
-      display: inline; // Show text on larger screens
-    }
-  }
-}
-
-.user-dropdown {
-  .user-trigger {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-  }
-
-  .user-avatar {
-    background-color: #4a90e2;
-    color: white;
-    font-weight: 600;
-  }
-
-  .user-name {
-    display: none; // Hide username on mobile
-    font-weight: 500;
-    color: #495057;
-
-    @media (min-width: 768px) {
-      display: inline; // Show username on larger screens
-    }
-  }
-}
-
+<style scoped>
+/* 下拉菜单项样式 */
 :global(.el-dropdown-menu__item) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 14px;
+  padding: 8px 16px;
+}
+
+/* 用户下拉菜单触发区域 */
+.user-dropdown :global(.el-dropdown-link) {
+  outline: none;
 }
 </style>
-'''

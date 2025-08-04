@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
-import pageRoute from './constant-routes/pages.constantRoutes.js';
-import otherRoute from './constant-routes/other.constantRoutes.js';
+import pageRoute from './constant-routes/pages.constantRoutes';
+import otherRoute from './constant-routes/other.constantRoutes';
 import { useUserStore } from '@/stores/modules/user';
 
 const routes = [...pageRoute, ...otherRoute];
@@ -28,7 +28,12 @@ router.beforeEach(async (to, from, next) => {
   if (isLoggedIn) {
     // 如果已登录，访问登录页则重定向到个人中心
     if (to.path === '/login') {
-      next({ path: '/profile', query: to.query });
+      // 检查是否有OAuth回调参数，如果有则转到callback路由
+      if (to.query.redirect_uri && to.query.code_challenge) {
+        next({ path: '/callback', query: to.query });
+      } else {
+        next({ path: '/profile' });
+      }
     } else {
       next();
     }

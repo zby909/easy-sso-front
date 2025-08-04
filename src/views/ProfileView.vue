@@ -1,42 +1,35 @@
 <!-- src/views/ProfileView.vue -->
 <template>
-  <div class="profile-container">
-    <p v-if="!redirectUri">欢迎回来, {{ userStore.userInfo?.name || userStore.userInfo?.email }}!</p>
-    <p v-else>正在处理授权, 请稍候...</p>
+  <div class="mx-auto max-w-2xl p-8 text-center">
+    <div class="rounded-lg bg-white p-8 shadow-lg">
+      <h2 class="mb-6 text-2xl font-bold text-blue-500">个人中心</h2>
+
+      <div class="space-y-4">
+        <!-- 用户名信息 -->
+        <div class="flex items-center justify-between">
+          <div class="text-left">
+            <span class="text-sm text-gray-500">用户名</span>
+            <p class="text-lg text-gray-900">{{ userStore.userName || '未设置' }}</p>
+          </div>
+          <Icon icon="mdi:account-circle-outline" class="text-gray-400" />
+        </div>
+
+        <!-- 邮箱信息 -->
+        <div class="flex items-center justify-between">
+          <div class="text-left">
+            <span class="text-sm text-gray-500">邮箱</span>
+            <p class="text-lg text-gray-900">{{ userStore.userEmail || '未设置' }}</p>
+          </div>
+          <Icon icon="mdi:email-outline" class="text-gray-400" />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { useAuthStore } from '@/stores/modules/auth';
 import { useUserStore } from '@/stores/modules/user';
+import { Icon } from '@iconify/vue';
 
-const authStore = useAuthStore();
 const userStore = useUserStore();
-const route = useRoute();
-
-const redirectUri = computed(() => route.query.redirect_uri as string);
-const state = computed(() => route.query.state as string);
-const codeChallenge = computed(() => route.query.code_challenge as string);
-const codeChallengeMethod = computed(() => route.query.code_challenge_method as string);
-
-async function handleAfterAuth() {
-  if (!redirectUri.value || !codeChallenge.value) {
-    ElMessage.error('缺少必需的 code_challenge 参数，请返回重试');
-    return;
-  }
-  await authStore.handleAuthorize(redirectUri.value, codeChallenge.value, state.value, codeChallengeMethod.value);
-}
-
-onMounted(() => {
-  handleAfterAuth();
-});
 </script>
-
-<style scoped>
-.profile-container {
-  padding: 2rem;
-  text-align: center;
-}
-</style>

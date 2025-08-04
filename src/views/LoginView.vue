@@ -1,20 +1,20 @@
-'''<!-- SSO登录页面 -->
 <template>
-  <div class="login-container">
-    <div class="login-card">
+  <!-- SSO登录页面 -->
+  <div class="flex w-full flex-1 flex-col items-center justify-center">
+    <div class="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-10 shadow-xl">
       <!-- Header -->
-      <div class="card-header">
-        <Icon icon="mdi:shield-lock-outline" class="header-icon" />
-        <h1 class="title">SSO 登录中心</h1>
-        <p class="subtitle">统一认证，安全访问</p>
+      <div class="mb-8 text-center">
+        <Icon icon="mdi:shield-lock-outline" class="mb-4 text-5xl text-blue-500" />
+        <h1 class="text-3xl font-bold text-gray-800">SSO 登录中心</h1>
+        <p class="mt-2 text-base text-gray-500">统一认证，安全访问</p>
       </div>
 
       <!-- Form -->
-      <el-form ref="formRef" :model="form" :rules="rules" class="login-form" @submit.prevent="handleSubmit">
+      <el-form ref="formRef" :model="form" :rules="rules" class="w-full" @submit.prevent="handleSubmit">
         <!-- 模式切换 -->
-        <el-radio-group v-model="isRegisterMode" class="mode-switch">
-          <el-radio-button :label="false">登录</el-radio-button>
-          <el-radio-button :label="true">注册</el-radio-button>
+        <el-radio-group v-model="isRegisterMode" class="mb-6 flex w-full">
+          <el-radio-button :value="false" class="w-1/2">登录</el-radio-button>
+          <el-radio-button :value="true" class="w-1/2">注册</el-radio-button>
         </el-radio-group>
 
         <!-- 邮箱 -->
@@ -29,10 +29,10 @@
 
         <!-- 验证码 -->
         <el-form-item prop="code">
-          <div class="code-input-group">
+          <div class="flex w-full gap-4">
             <el-input v-model="form.code" placeholder="6位验证码" size="large" :prefix-icon="Key" @keyup.enter="handleSubmit" />
             <el-button
-              class="code-btn"
+              class="whitespace-nowrap"
               size="large"
               :disabled="!form.email || authStore.verificationLoading || cooldownTime > 0"
               :loading="authStore.verificationLoading"
@@ -45,13 +45,13 @@
 
         <!-- 提交按钮 -->
         <el-form-item>
-          <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="handleSubmit">
+          <el-button type="primary" size="large" class="h-12 w-full text-base font-semibold" :loading="loading" @click="handleSubmit">
             {{ isRegisterMode ? '注册' : '登录' }}
           </el-button>
         </el-form-item>
       </el-form>
     </div>
-    <footer class="login-footer">
+    <footer class="mt-8 text-center text-sm text-gray-500">
       <p>&copy; {{ new Date().getFullYear() }} SSO-Auth. All Rights Reserved.</p>
     </footer>
   </div>
@@ -116,7 +116,12 @@ async function handleSubmit() {
     : await authStore.login(form.email, form.code);
 
   if (success) {
-    router.push({ path: '/profile', query: route.query });
+    // 检查是否有OAuth回调参数，决定跳转到哪个页面
+    if (redirectUri.value && codeChallenge.value) {
+      router.push({ path: '/callback', query: route.query });
+    } else {
+      router.push({ path: '/profile' });
+    }
   }
 }
 
@@ -127,99 +132,22 @@ onMounted(() => {
 });
 </script>
 
-<style scoped lang="scss">
-.login-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  flex: 1;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 400px;
-  padding: 2.5rem;
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e9ecef;
-}
-
-.card-header {
-  text-align: center;
-  margin-bottom: 2rem;
-
-  .header-icon {
-    font-size: 3rem;
-    color: #4a90e2;
-    margin-bottom: 1rem;
-  }
-
-  .title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #343a40;
-  }
-
-  .subtitle {
-    font-size: 1rem;
-    color: #6c757d;
-    margin-top: 0.5rem;
-  }
-}
-
-.login-form {
+<style scoped>
+/* Element Plus 自定义样式 */
+:deep(.el-radio-button:first-child .el-radio-button__inner) {
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
   width: 100%;
 }
 
-.mode-switch {
-  display: flex;
+:deep(.el-radio-button:last-child .el-radio-button__inner) {
+  border-top-right-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
   width: 100%;
-  margin-bottom: 1.5rem;
-
-  .el-radio-button {
-    width: 50%;
-    :deep(.el-radio-button__inner) {
-      width: 100%;
-      border-radius: 0 !important;
-      border: 1px solid #dee2e6;
-    }
-
-    &:first-child :deep(.el-radio-button__inner) {
-      border-top-left-radius: 8px !important;
-      border-bottom-left-radius: 8px !important;
-    }
-    &:last-child :deep(.el-radio-button__inner) {
-      border-top-right-radius: 8px !important;
-      border-bottom-right-radius: 8px !important;
-    }
-  }
 }
 
-.code-input-group {
-  display: flex;
-  gap: 1rem;
-  width: 100%;
-
-  .code-btn {
-    white-space: nowrap;
-  }
-}
-
-.submit-btn {
-  width: 100%;
-  height: 48px;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.login-footer {
-  margin-top: 2rem;
-  color: #6c757d;
-  font-size: 0.875rem;
-  text-align: center;
+:deep(.el-radio-button .el-radio-button__inner) {
+  border-radius: 0 !important;
+  border: 1px solid #dee2e6;
 }
 </style>
-'''

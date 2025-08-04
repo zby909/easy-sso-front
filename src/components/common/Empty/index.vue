@@ -6,11 +6,11 @@
  * @Reference:
 -->
 <template>
-  <div class="empty">
-    <div class="empty__image">
-      <img :src="image" alt="Here is not thing." />
+  <div class="box-border flex flex-col items-center justify-center py-18">
+    <div class="h-70 w-70">
+      <img :src="image" alt="Here is not thing." class="h-full w-full" />
     </div>
-    <p class="empty__description">{{ description }}</p>
+    <p class="text-text-muted mt-4 px-15 text-base leading-5">{{ description }}</p>
   </div>
 </template>
 
@@ -29,32 +29,3 @@ defineProps({
   },
 });
 </script>
-
-<style lang="scss" scoped>
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  padding: 72px 0;
-
-  &__image {
-    width: 280px;
-    height: 280px;
-
-    img {
-      width: 100%;
-      height: 100%;
-    }
-  }
-
-  &__description {
-    margin-top: 16px;
-    padding: 0 60px;
-    color: #969799;
-    font-size: 16px;
-    line-height: 20px;
-  }
-}
-</style>
