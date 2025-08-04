@@ -1,5 +1,9 @@
 /* element-ui  全局覆盖样式 类名慎重*/
 /* element-ui  全局覆盖样式 类名慎重*/
+
+/* Element Plus 暗黑模式导入 */
+@import 'element-plus/theme-chalk/dark/css-vars.css';
+
 .el-loading-mask {
   .el-icon-loading {
     font-size: 30px;

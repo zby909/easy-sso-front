@@ -22,6 +22,7 @@ declare module 'vue' {
     ElRadioButton: typeof import('element-plus/es')['ElRadioButton']
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
     ElRow: typeof import('element-plus/es')['ElRow']
+    ElTooltip: typeof import('element-plus/es')['ElTooltip']
     Empty: typeof import('./../components/common/Empty/index.vue')['default']
     GLIcon: typeof import('./../components/common/GLIcon.vue')['default']
     Navbar: typeof import('./../components/common/Navbar.vue')['default']

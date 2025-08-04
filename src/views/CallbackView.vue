@@ -1,9 +1,9 @@
 <!-- src/views/CallbackView.vue -->
 <template>
   <div class="mx-auto max-w-2xl p-8 text-center">
-    <div class="rounded-lg bg-white p-8 shadow-lg">
+    <div class="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
       <el-loading v-if="processing" />
-      <p class="text-gray-600">正在处理授权请求，请稍候...</p>
+      <p class="text-gray-600 dark:text-gray-300">正在处理授权请求，请稍候...</p>
     </div>
   </div>
 </template>

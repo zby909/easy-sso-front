@@ -9,12 +9,12 @@
       </div>
       <div class="relative float-left w-[300px] overflow-hidden py-8">
         <div class="animate-slide-up mb-5 text-[32px] leading-10 font-bold text-blue-500 opacity-0">OOPS!</div>
-        <div class="animate-slide-up-1 mb-2.5 text-xl leading-6 font-bold text-gray-800 opacity-0">{{ message }}</div>
-        <div class="animate-slide-up-2 mb-8 text-[13px] leading-[21px] text-gray-500 opacity-0">
+        <div class="animate-slide-up-1 mb-2.5 text-xl leading-6 font-bold text-gray-800 opacity-0 dark:text-gray-200">{{ message }}</div>
+        <div class="animate-slide-up-2 mb-8 text-[13px] leading-[21px] text-gray-500 opacity-0 dark:text-gray-400">
           Please check that the URL you entered is correct, or click the button below to return to the previous page.
         </div>
         <a
-          class="animate-slide-up-3 float-left block h-9 w-[110px] cursor-pointer rounded-full bg-blue-500 text-center text-sm leading-9 text-white opacity-0"
+          class="animate-slide-up-3 float-left block h-9 w-[110px] cursor-pointer rounded-full bg-blue-500 text-center text-sm leading-9 text-white opacity-0 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
           @click="back"
         >
           Back

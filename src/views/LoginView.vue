@@ -1,12 +1,12 @@
 <template>
   <!-- SSO登录页面 -->
   <div class="flex w-full flex-1 flex-col items-center justify-center">
-    <div class="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-10 shadow-xl">
+    <div class="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-10 shadow-xl dark:border-gray-700 dark:bg-gray-800">
       <!-- Header -->
       <div class="mb-8 text-center">
         <Icon icon="mdi:shield-lock-outline" class="mb-4 text-5xl text-blue-500" />
-        <h1 class="text-3xl font-bold text-gray-800">SSO 登录中心</h1>
-        <p class="mt-2 text-base text-gray-500">统一认证，安全访问</p>
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">SSO 登录中心</h1>
+        <p class="mt-2 text-base text-gray-500 dark:text-gray-400">统一认证，安全访问</p>
       </div>
 
       <!-- Form -->
@@ -51,7 +51,7 @@
         </el-form-item>
       </el-form>
     </div>
-    <footer class="mt-8 text-center text-sm text-gray-500">
+    <footer class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
       <p>&copy; {{ new Date().getFullYear() }} SSO-Auth. All Rights Reserved.</p>
     </footer>
   </div>

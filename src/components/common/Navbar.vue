@@ -1,31 +1,44 @@
 <!-- 导航栏组件 -->
 <template>
-  <header class="sticky top-0 z-[1000] flex h-16 w-full items-center justify-center bg-white px-4 shadow-md md:px-8">
+  <header
+    class="sticky top-0 z-[1000] flex h-16 w-full items-center justify-center bg-white px-4 shadow-md transition-colors md:px-8 dark:bg-gray-800"
+  >
     <div class="flex w-full max-w-6xl items-center justify-between">
       <!-- Logo区域 -->
       <div class="flex cursor-pointer items-center gap-2 sm:gap-3" @click="goHome">
         <Icon icon="mdi:shield-lock-outline" class="text-2xl text-blue-500 sm:text-3xl" />
-        <span class="text-lg font-semibold text-gray-800 sm:text-xl">
+        <span class="text-lg font-semibold text-gray-800 sm:text-xl dark:text-gray-100">
           <span class="hidden sm:inline">SSO-Auth</span>
           <span class="sm:hidden">SSO</span>
         </span>
       </div>
 
       <!-- 导航菜单区域 -->
-      <div class="navbar-menu flex items-center">
+      <div class="navbar-menu flex items-center gap-3">
+        <!-- 主题切换按钮 -->
+        <el-tooltip :content="themeStore.isDark ? '切换到亮色模式' : '切换到暗色模式'" placement="bottom">
+          <el-button
+            type="text"
+            class="!p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
+            @click="themeStore.toggleTheme"
+          >
+            <Icon :icon="themeStore.isDark ? 'mdi:weather-sunny' : 'mdi:weather-night'" class="text-lg" />
+          </el-button>
+        </el-tooltip>
+
         <!-- 用户信息下拉菜单 -->
         <el-dropdown v-if="userStore.isLoggedIn" class="user-dropdown" trigger="click">
           <div
-            class="flex min-w-[44px] cursor-pointer items-center justify-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-gray-50 sm:justify-start sm:gap-3 sm:px-3"
+            class="flex min-w-[44px] cursor-pointer items-center justify-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-gray-50 sm:justify-start sm:gap-3 sm:px-3 dark:hover:bg-gray-700"
           >
             <!-- 用户头像 -->
             <el-avatar :size="28" class="shrink-0 sm:!h-8 sm:!w-8">
               {{ userStore.userName?.charAt(0).toUpperCase() }}
             </el-avatar>
             <!-- 用户名（在中等屏幕及以上显示） -->
-            <span class="hidden font-medium text-gray-600 md:inline">{{ userStore.userName }}</span>
+            <span class="hidden font-medium text-gray-600 md:inline dark:text-gray-300">{{ userStore.userName }}</span>
             <!-- 下拉箭头 -->
-            <Icon icon="mdi:chevron-down" class="text-sm text-gray-400" />
+            <Icon icon="mdi:chevron-down" class="text-sm text-gray-400 dark:text-gray-500" />
           </div>
           <template #dropdown>
             <el-dropdown-menu>
@@ -56,11 +69,13 @@
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/modules/user';
 import { useAuthStore } from '@/stores/modules/auth';
+import { useThemeStore } from '@/stores/modules/theme';
 import { Icon } from '@iconify/vue';
 
 const router = useRouter();
 const userStore = useUserStore();
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 
 const goHome = () => router.push('/');
 const goToProfile = () => router.push('/profile');
