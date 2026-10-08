@@ -25,6 +25,12 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/invite',
+    name: 'invite',
+    component: () => import('@/views/InvitationView.vue'),
+    meta: { title: '受邀加入组织', requiresAuth: false },
+  },
+  {
     path: '/profile',
     name: 'profile',
     component: () => import('@/views/ProfileView.vue'),
@@ -40,6 +46,16 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: '授权回调处理',
       requiresAuth: true,
+    },
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('@/views/AdminView.vue'),
+    meta: {
+      title: 'SSO 管理后台',
+      requiresAuth: true,
+      requiresAdmin: true,
     },
   },
 ];

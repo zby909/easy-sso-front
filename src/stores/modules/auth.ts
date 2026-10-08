@@ -5,6 +5,8 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import * as authApi from '@/api/modules/home.api';
 import { useUserStore } from './user';
+import { getErrorMessage } from '@/api/create-axios';
+import { getSessionGeneration } from '@/api/session-events';
 
 // 验证码冷却时间（秒）
 const VERIFICATION_COOLDOWN = 60;
@@ -16,7 +18,6 @@ export const useAuthStore = defineStore('auth', () => {
   const verificationLoading = ref(false);
   const registerLoading = ref(false);
   const loginLoading = ref(false);
-  const authorizeLoading = ref(false);
 
   // 验证码冷却时间
   const cooldownTime = ref(0);
@@ -43,13 +44,17 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * 发送验证码
    */
-  async function sendVerificationCode(email: string, purpose: 'login' | 'register') {
+  async function sendVerificationCode(email: string, purpose: 'login' | 'register', invitationToken?: string) {
     try {
       verificationLoading.value = true;
 
-      const response = await authApi.sendVerificationCode({ email, purpose });
+      const response = await authApi.sendVerificationCode({
+        email,
+        purpose,
+        ...(invitationToken === undefined ? {} : { invitation_token: invitationToken }),
+      });
 
-      if (response.code === 200) {
+      if (response.code >= 200 && response.code < 300) {
         ElMessage.success(response.msg || '验证码发送成功');
         // 开始冷却计时
         const cooldown = response.data?.cooldownSeconds || VERIFICATION_COOLDOWN;
@@ -66,7 +71,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (error.response?.status === 429) {
         ElMessage.error('验证码发送过于频繁，请稍后再试');
       } else {
-        ElMessage.error(error.message || '验证码发送失败');
+        ElMessage.error(getErrorMessage(error, '验证码发送失败'));
       }
       return false;
     } finally {
@@ -77,13 +82,13 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * 用户注册
    */
-  async function register(email: string, code: string, name?: string) {
+  async function register(email: string, code: string, name: string) {
     try {
       registerLoading.value = true;
 
       const response = await authApi.register({ email, verificationCode: code, name });
 
-      if (response.code === 200) {
+      if (response.code >= 200 && response.code < 300) {
         ElMessage.success(response.msg || '注册成功');
         // 注册成功后，用户需要重新登录
         return true;
@@ -93,7 +98,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (error: any) {
       console.error('Register error:', error);
-      ElMessage.error(error.message || '注册失败');
+      ElMessage.error(getErrorMessage(error, '注册失败'));
       return false;
     } finally {
       registerLoading.value = false;
@@ -110,17 +115,19 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.login({ email, code });
 
       if (response.code === 200) {
-        ElMessage.success(response.msg || '登录成功');
-        // 登录成功后，获取并设置用户信息
-        await fetchUserInfo();
-        return true;
+        // 新登录不复用前一身份尚未返回的探测结果。
+        userStore.clearUserInfo();
+        const active = await userStore.initUserInfo();
+        if (active) ElMessage.success(response.msg || '登录成功');
+        else ElMessage.error('无法确认登录会话，请重新登录');
+        return active;
       } else {
         ElMessage.error(response.msg || '登录失败');
         return false;
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      ElMessage.error(error.message || '登录失败');
+      ElMessage.error(getErrorMessage(error, '登录失败'));
       return false;
     } finally {
       loginLoading.value = false;
@@ -130,53 +137,43 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * 处理OAuth授权流程
    */
-  async function handleAuthorize(redirectUri: string, codeChallenge: string, clientState?: string, codeChallengeMethod?: string) {
+  async function handleAuthorize(request: Api.Request.Authorize) {
+    const generation = getSessionGeneration();
     try {
-      authorizeLoading.value = true;
-
-      // 如果没有提供PKCE参数，说明是第一次访问，需要重定向到授权页面
-      if (!redirectUri || !codeChallenge) {
+      if (!request.client_id || !request.redirect_uri || !request.code_challenge || !request.expected_user_id) {
         throw new Error('缺少必要的授权参数');
       }
-
-      const response = await authApi.authorize({
-        redirect_uri: redirectUri,
-        state: clientState || '',
-        code_challenge: codeChallenge,
-        code_challenge_method: codeChallengeMethod,
-      });
+      const response = await authApi.authorize(request);
+      if (generation !== getSessionGeneration()) return false;
 
       if (response.code === 200) {
-        // 授权成功，重定向到客户端
-        const params = new URLSearchParams({
-          code: response.data!.code,
-          state: response.data!.state,
-        });
-
-        try {
-          await ElMessageBox.confirm(`即将重定向到客户端：${redirectUri}`, '授权成功', {
-            confirmButtonText: '立即跳转',
-            cancelButtonText: '取消',
-            type: 'success',
-          });
-
-          window.location.href = `${redirectUri}?${params.toString()}`;
-          return true;
-        } catch {
-          // 用户取消了重定向
-          ElMessage.info('重定向已取消');
-          return false;
+        // 用户已在授权页明确同意，签发授权码后返回该快照中的目标系统。
+        const target = new URL(request.redirect_uri);
+        target.searchParams.set('code', response.data!.code);
+        if (response.data!.state) {
+          target.searchParams.set('state', response.data!.state);
         }
+
+        window.location.replace(target.toString());
+        return true;
       } else {
         ElMessage.error(response.msg || '授权失败');
         return false;
       }
     } catch (error: any) {
-      console.error('Authorize error:', error);
-      ElMessage.error(error.message || '授权失败');
+      if (generation !== getSessionGeneration()) return false;
+      if (error.response?.status === 409) {
+        // 重新展示当前身份，但绝不能自动重试授权，必须再次征得用户同意。
+        userStore.clearUserInfo();
+        try {
+          await userStore.initUserInfo();
+        } catch (probeError) {
+          ElMessage.error(getErrorMessage(probeError, '暂时无法确认登录状态'));
+          return false;
+        }
+      }
+      ElMessage.error(getErrorMessage(error, '授权失败'));
       return false;
-    } finally {
-      authorizeLoading.value = false;
     }
   }
 
@@ -184,39 +181,21 @@ export const useAuthStore = defineStore('auth', () => {
    * 注销登录中心
    */
   async function logout() {
+    const generation = getSessionGeneration();
     try {
-      await authApi.logoutCenter();
-      userStore.clearUserInfo();
-      ElMessage.success('退出登录成功');
-      return true;
+      const response = await authApi.logoutCenter();
+      if (response.code !== 200) throw new Error(response.msg || '退出失败');
     } catch (error: any) {
-      console.error('Logout error:', error);
-      // 即使接口失败也清除本地状态
-      userStore.clearUserInfo();
-      return false;
-    }
-  }
-
-  /**
-   * 获取当前用户信息
-   */
-  async function fetchUserInfo() {
-    try {
-      const response = await authApi.getUserInfo({});
-
-      if (response.code === 200) {
-        userStore.setUserInfo(response.data!);
-        return true;
-      } else {
-        // 如果获取用户信息失败，可能是token失效，清除本地信息
-        userStore.clearUserInfo();
+      if (generation !== getSessionGeneration()) return false;
+      if (error.response?.status !== 401) {
+        ElMessage.error(getErrorMessage(error, '退出失败，请稍后重试'));
         return false;
       }
-    } catch (error: any) {
-      console.error('Get current user error:', error);
-      userStore.clearUserInfo();
-      return false;
     }
+    if (generation !== getSessionGeneration()) return false;
+    userStore.clearUserInfo();
+    ElMessage.success('退出登录成功');
+    return true;
   }
 
   return {
@@ -224,7 +203,6 @@ export const useAuthStore = defineStore('auth', () => {
     verificationLoading,
     registerLoading,
     loginLoading,
-    authorizeLoading,
     cooldownTime,
 
     // 方法
@@ -233,6 +211,5 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     handleAuthorize,
     logout,
-    fetchUserInfo,
   };
 });

@@ -7,13 +7,20 @@
  */
 
 import axios from 'axios';
-import qs from 'qs';
 
 import type { AxiosRequestConfig, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 const isFunction = val => typeof val === 'function';
 
+// 优先展示后端可操作的业务提示，未知响应回退为通用错误。
+export function getErrorMessage(error: any, fallback: string): string {
+  const message = error?.response?.data?.msg;
+  if (typeof message === 'string' && message) return message;
+  return typeof error?.message === 'string' && error.message ? error.message : fallback;
+}
+
 export type CustomConfig = {
+  _sessionGeneration?: number;
   _commonOptions?: AxiosCustomOpt;
   _transformFn?: AxiosTransform;
 };
@@ -21,15 +28,9 @@ export type CustomConfig = {
 export type CreateAxiosOptions = AxiosRequestConfig & CustomConfig;
 
 export type AxiosCustomOpt = {
-  isUploadFile?: boolean; //是否上传文件
-  supportFormUrlencoded?: boolean; //是否支持www-form-urlencoded格式
-  joinTime?: boolean; //get请求是否加时间戳
-
   afHLoading?: boolean; //是否显示loading
   loadingTxt?: string; //loading提示文字
   delayLoadingTime?: number; //延迟多少毫秒显示loading
-  withToken?: boolean; //是否携带token
-  authenticationScheme?: string; //token的前缀
   isAlertErrorMsg?: boolean; //是否弹出错误提示
   returnResponseData?: boolean; //是否转换响应数据
 };
@@ -79,22 +80,6 @@ export class CreateAxios<R = any> {
     // Request interceptor
     this.axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig & CustomConfig) => {
       if (requestInterceptors && isFunction(requestInterceptors)) {
-        const { _commonOptions } = config;
-        const { joinTime, isUploadFile, supportFormUrlencoded } = _commonOptions || {};
-        if (supportFormUrlencoded && config.data) {
-          config.data = qs.stringify(config.data);
-        }
-        // get请求加时间戳 防止缓存
-        if (joinTime && config.method === 'get') {
-          config.params = {
-            ...config.params,
-            _t: new Date().getTime(),
-          };
-        }
-        if (isUploadFile && config.headers) {
-          //为了兼容传入的data不是FormData格式的情况，axios检测到请求头是multipart/form-data时会自动转换成FormData格式并append数据
-          config.headers['Content-Type'] = 'multipart/form-data';
-        }
         config = requestInterceptors(config);
       }
       return config;

@@ -46,6 +46,10 @@
                 <Icon icon="mdi:account-circle-outline" />
                 <span>个人中心</span>
               </el-dropdown-item>
+              <el-dropdown-item v-if="userStore.userInfo?.isAdmin" @click="goToAdmin">
+                <Icon icon="mdi:shield-account-outline" />
+                <span>管理后台</span>
+              </el-dropdown-item>
               <el-dropdown-item divided @click="handleLogout">
                 <Icon icon="mdi:logout" />
                 <span>退出登录</span>
@@ -79,11 +83,12 @@ const themeStore = useThemeStore();
 
 const goHome = () => router.push('/');
 const goToProfile = () => router.push('/profile');
+const goToAdmin = () => router.push('/admin');
 const goToLogin = () => router.push('/login');
 
+// 只有本次退出确实完成时才导航；失败和迟到的旧退出结果不能影响新登录。
 const handleLogout = async () => {
-  await authStore.logout();
-  router.push('/login');
+  if (await authStore.logout()) router.push('/login');
 };
 </script>
 

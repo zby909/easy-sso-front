@@ -5,12 +5,13 @@
  * @LastEditors: zby
  * @Reference:
  */
-import { CreateAxios } from './create-axios';
+import { CreateAxios, getErrorMessage } from './create-axios';
+import { getSessionGeneration, notifyUnauthorized } from './session-events';
 import type { AxiosTransform, CustomConfig } from './create-axios';
 import { ElMessage, ElLoading } from 'element-plus';
 
 const isDev = import.meta.env.DEV; // 是否开发环境
-const baseServiceUrl = isDev ? '/proxy' : import.meta.env.VITE_SERVICE_BASE_URL;
+const baseServiceUrl = isDev ? '/proxy' : import.meta.env.VITE_SERVICE_BASE_URL || '/';
 let loadingStatus; //loading实例
 let loadingApiLength = 0; //记录需要loading提示的接口 (为了保证需要loading时间最长的那个接口完成后再close)
 let showLoadingTimer;
@@ -32,16 +33,10 @@ function completeLoading() {
 const transformFn: AxiosTransform = {
   //请求之前的拦截器
   requestInterceptors: config => {
+    config._sessionGeneration = getSessionGeneration();
     const { _commonOptions } = config;
-    const { withToken, authenticationScheme } = _commonOptions || {};
     const { afHLoading, loadingTxt, delayLoadingTime } = _commonOptions || {};
     if (afHLoading) toLoading(loadingTxt, delayLoadingTime);
-    // const token = getToken();
-    const token = 'token';
-    if (withToken && token) {
-      // jwt token
-      config.headers.Authorization = authenticationScheme ? `${authenticationScheme} ${token}` : token;
-    }
     return config;
   },
   //请求之后的拦截器
@@ -58,11 +53,12 @@ const transformFn: AxiosTransform = {
   },
   //请求之后的拦截器错误处理
   responseInterceptorsCatch: error => {
-    const { _commonOptions } = error.config as typeof error.config & CustomConfig;
+    const { _commonOptions } = (error.config || {}) as CustomConfig;
+    if (error.response?.status === 401) notifyUnauthorized(error.config?.url || '', error.config?._sessionGeneration);
     const { isAlertErrorMsg, afHLoading } = _commonOptions || {};
     if (afHLoading) completeLoading();
     if (isAlertErrorMsg) {
-      ElMessage.error(error.message);
+      ElMessage.error(getErrorMessage(error, '请求失败，请稍后重试'));
     }
     return Promise.reject(error);
   },
@@ -71,6 +67,9 @@ const transformFn: AxiosTransform = {
 export const defHttp = new CreateAxios<Api.Request.Result>({
   baseURL: baseServiceUrl,
   timeout: 2 * 60 * 1000, // 2分钟超时
+  // SSO 登录态保存在认证中心的 HttpOnly Cookie 中。
+  // 生产环境前后端分域部署时必须显式携带 Cookie。
+  withCredentials: true,
   _transformFn: transformFn,
   _commonOptions: {
     isAlertErrorMsg: true,

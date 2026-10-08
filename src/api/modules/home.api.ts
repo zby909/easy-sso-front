@@ -8,6 +8,22 @@
  */
 import { defHttp } from '@/api';
 
+// 邀请Token仅作为JSON请求体传递，不放进后端请求URL。
+export function inspectInvitation(token: string) {
+  return defHttp.request<Api.Response.Base<Api.Response.InvitationInfo>>(
+    { url: '/api/auth/invitations/inspect', method: 'POST', data: { token } },
+    { returnResponseData: true, isAlertErrorMsg: false },
+  );
+}
+
+// 接受邀请只加入组织，后续仍须登录且逐平台开通。
+export function acceptInvitation(data: { token: string; code: string; name?: string }) {
+  return defHttp.request<Api.Response.Base<{ id: number }>>(
+    { url: '/api/auth/invitations/accept', method: 'POST', data },
+    { returnResponseData: true, isAlertErrorMsg: false },
+  );
+}
+
 // ==================== 认证相关接口 ====================
 
 /**
@@ -98,6 +114,26 @@ export function authorize(params: Api.Request.Authorize, config?, options?) {
   return defHttp.request<Api.Response.Base<Api.Response.Authorize>>(
     {
       url: '/api/auth/authorize',
+      method: 'POST',
+      data: params,
+      ...config,
+    },
+    {
+      afHLoading: false,
+      isAlertErrorMsg: false,
+      returnResponseData: true,
+      ...options,
+    },
+  );
+}
+
+/**
+ * 获取经过认证中心校验的客户端展示信息
+ */
+export function getClientInfo(params: Api.Request.ClientInfo, config?, options?) {
+  return defHttp.request<Api.Response.Base<Api.Response.ClientInfo>>(
+    {
+      url: '/api/auth/client',
       method: 'GET',
       params,
       ...config,

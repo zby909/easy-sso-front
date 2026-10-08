@@ -14,7 +14,8 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
-    vueDevTools(),
+    // 测试环境禁用开发工具，避免Inspector虚拟脚本404和悬浮面板干扰验收。
+    process.env.NODE_ENV !== 'test' && vueDevTools(),
     AutoImport({
       imports: ['vue', 'vue-router'],
       resolvers: [ElementPlusResolver()],
@@ -38,16 +39,24 @@ export default defineConfig({
         manualChunks: {
           // 将第三方库单独打包
           'element-plus': ['element-plus', '@element-plus/icons-vue'],
-          crypto: ['crypto-js'],
-          utils: ['axios', 'dayjs', 'qs'],
+          utils: ['axios', 'dayjs'],
         },
       },
+    },
+  },
+  // 预览生产包时请求使用 /api；保留此前缀并固定端口，匹配后端开发来源白名单。
+  preview: {
+    host: 'localhost',
+    port: 4173,
+    strictPort: true,
+    proxy: {
+      '/api': { target: 'http://127.0.0.1:3000', changeOrigin: true },
     },
   },
   server: {
     proxy: {
       '/proxy': {
-        target: 'http://localhost:3000', // 要代理的域名
+        target: 'http://127.0.0.1:3000', // 开发环境后端，生产使用同源 /api
         changeOrigin: true, //允许跨域
         rewrite: path => path.replace(/^\/proxy/, ''),
       },

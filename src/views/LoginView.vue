@@ -6,15 +6,22 @@
       <div class="mb-8 text-center">
         <Icon icon="mdi:shield-lock-outline" class="mb-4 text-5xl text-blue-500" />
         <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">SSO 登录中心</h1>
-        <p class="mt-2 text-base text-gray-500 dark:text-gray-400">统一认证，安全访问</p>
+        <p class="mt-2 text-base text-gray-500 dark:text-gray-400">组织成员登录 · 普通成员请从邀请链接加入</p>
       </div>
 
+      <el-alert
+        v-if="isRegisterMode"
+        title="仅允许后端ADMIN_EMAILS名单中的邮箱初始化，普通用户请联系管理员获取邀请。平台仍需单独开通。"
+        type="info"
+        :closable="false"
+        class="mb-5"
+      />
       <!-- Form -->
       <el-form ref="formRef" :model="form" :rules="rules" class="w-full" @submit.prevent="handleSubmit">
         <!-- 模式切换 -->
         <el-radio-group v-model="isRegisterMode" class="mb-6 flex w-full">
           <el-radio-button :value="false" class="w-1/2">登录</el-radio-button>
-          <el-radio-button :value="true" class="w-1/2">注册</el-radio-button>
+          <el-radio-button :value="true" class="w-1/2">管理员初始化</el-radio-button>
         </el-radio-group>
 
         <!-- 邮箱 -->
@@ -24,7 +31,7 @@
 
         <!-- 姓名 (仅注册) -->
         <el-form-item v-if="isRegisterMode" prop="name">
-          <el-input v-model="form.name" placeholder="请输入姓名（可选）" size="large" :prefix-icon="Postcard" />
+          <el-input v-model="form.name" placeholder="请输入姓名" size="large" :prefix-icon="Postcard" />
         </el-form-item>
 
         <!-- 验证码 -->
@@ -46,7 +53,7 @@
         <!-- 提交按钮 -->
         <el-form-item>
           <el-button type="primary" size="large" class="h-12 w-full text-base font-semibold" :loading="loading" @click="handleSubmit">
-            {{ isRegisterMode ? '注册' : '登录' }}
+            {{ isRegisterMode ? '验证并初始化管理员' : '登录' }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -83,7 +90,10 @@ const rules: FormRules = {
     { required: true, message: '请输入邮箱地址', trigger: 'blur' },
     { type: 'email', message: '请输入正确的邮箱格式', trigger: ['blur', 'change'] },
   ],
-  name: [{ min: 2, max: 20, message: '姓名长度应在2-20个字符', trigger: 'blur' }],
+  name: [
+    { required: true, message: '请输入姓名', trigger: 'blur' },
+    { min: 2, max: 20, message: '姓名长度应在2-20个字符', trigger: 'blur' },
+  ],
   code: [
     { required: true, message: '请输入验证码', trigger: 'blur' },
     { len: 6, message: '验证码必须为6位', trigger: 'blur' },
@@ -93,6 +103,7 @@ const rules: FormRules = {
 const loading = computed(() => authStore.registerLoading || authStore.loginLoading);
 const cooldownTime = computed(() => authStore.cooldownTime);
 
+const clientId = computed(() => route.query.client_id as string);
 const redirectUri = computed(() => route.query.redirect_uri as string);
 const codeChallenge = computed(() => route.query.code_challenge as string);
 
@@ -101,8 +112,11 @@ watch(isRegisterMode, () => {
 });
 
 async function sendCode() {
-  const valid = await formRef.value?.validateField('email');
-  if (!valid) return;
+  try {
+    await formRef.value?.validateField('email');
+  } catch {
+    return;
+  }
 
   const purpose = isRegisterMode.value ? 'register' : 'login';
   await authStore.sendVerificationCode(form.email, purpose);
@@ -111,13 +125,18 @@ async function sendCode() {
 async function handleSubmit() {
   await formRef.value?.validate();
 
-  const success = isRegisterMode.value
-    ? await authStore.register(form.email, form.code, form.name || undefined)
-    : await authStore.login(form.email, form.code);
+  if (isRegisterMode.value) {
+    if (await authStore.register(form.email, form.code, form.name)) {
+      isRegisterMode.value = false;
+      form.code = '';
+    }
+    return;
+  }
+  const success = await authStore.login(form.email, form.code);
 
   if (success) {
     // 检查是否有OAuth回调参数，决定跳转到哪个页面
-    if (redirectUri.value && codeChallenge.value) {
+    if (clientId.value && redirectUri.value && codeChallenge.value) {
       router.push({ path: '/callback', query: route.query });
     } else {
       router.push({ path: '/profile' });
@@ -126,7 +145,8 @@ async function handleSubmit() {
 }
 
 onMounted(() => {
-  if (!redirectUri.value || !codeChallenge.value) {
+  const hasOAuthParams = clientId.value || redirectUri.value || codeChallenge.value || route.query.state;
+  if (hasOAuthParams && (!clientId.value || !redirectUri.value || !codeChallenge.value)) {
     ElMessage.error('缺少必要的授权参数，请返回重试');
   }
 });

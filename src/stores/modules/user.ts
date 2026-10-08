@@ -1,76 +1,67 @@
-/**
- * SSO用户状态管理 Store
- */
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { useAuthStore } from './auth';
+import * as authApi from '@/api/modules/home.api';
+import { advanceSessionGeneration } from '@/api/session-events';
 
 export const useUserStore = defineStore(
   'user',
   () => {
-    // 状态
     const userInfo = ref<Api.Response.UserInfo | null>(null);
     const isLoggedIn = ref(false);
-
-    // 计算属性
     const userName = computed(() => userInfo.value?.name || userInfo.value?.email || '');
     const userEmail = computed(() => userInfo.value?.email || '');
+    let pending: Promise<boolean> | null = null;
+    let generation = 0;
 
-    /**
-     * 设置用户信息
-     */
+    // 身份变化使旧的在途探测结果失效。
     function setUserInfo(user: Api.Response.UserInfo) {
+      if (!isLoggedIn.value || userInfo.value?.id !== user.id) advanceSessionGeneration();
+      generation++;
       userInfo.value = user;
       isLoggedIn.value = true;
     }
 
-    /**
-     * 清除用户信息
-     */
+    // 清理本地身份并允许下一次路由重新向中心确认。
     function clearUserInfo() {
+      advanceSessionGeneration();
+      generation++;
       userInfo.value = null;
       isLoggedIn.value = false;
+      pending = null;
     }
 
-    /**
-     * 应用初始化时调用，如果已登录，则获取最新用户信息
-     */
-    async function initUserInfo() {
-      // The state is already loaded by the plugin.
-      // We just need to check if we are logged in and refresh the user info.
-      if (isLoggedIn.value) {
-        const authStore = useAuthStore();
-        // fetchUserInfo will clear user info on failure
-        await authStore.fetchUserInfo();
-      }
+    // 每次导航可重新探测；并发请求合并，网络故障不缓存为登出。
+    function initUserInfo(): Promise<boolean> {
+      if (pending) return pending;
+      const current = generation;
+      const request = Promise.resolve().then(async () => {
+        try {
+          const response = await authApi.getUserInfo({});
+          if (current !== generation) return isLoggedIn.value;
+          if (response.code === 200 && response.data) setUserInfo(response.data);
+          else if (response.code === 401) clearUserInfo();
+          else throw new Error(response.msg || '无法确认登录状态');
+          return isLoggedIn.value;
+        } catch (error: any) {
+          if (error.response?.status === 401) {
+            if (current === generation) clearUserInfo();
+            return isLoggedIn.value;
+          }
+          throw error;
+        } finally {
+          if (pending === request) pending = null;
+        }
+      });
+      pending = request;
+      return request;
     }
 
-    /**
-     * 更新用户信息的某个字段
-     */
+    // 更新展示信息不替代服务端身份校验。
     function updateUserInfo(updates: Partial<Api.Response.UserInfo>) {
-      if (userInfo.value) {
-        userInfo.value = { ...userInfo.value, ...updates };
-      }
+      if (userInfo.value) userInfo.value = { ...userInfo.value, ...updates };
     }
 
-    return {
-      // 状态
-      userInfo,
-      isLoggedIn,
-
-      // 计算属性
-      userName,
-      userEmail,
-
-      // 方法
-      setUserInfo,
-      clearUserInfo,
-      initUserInfo,
-      updateUserInfo,
-    };
+    return { userInfo, isLoggedIn, userName, userEmail, setUserInfo, clearUserInfo, initUserInfo, updateUserInfo };
   },
-  {
-    persist: true,
-  },
+  { persist: true },
 );
